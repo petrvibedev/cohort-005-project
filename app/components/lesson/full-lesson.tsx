@@ -97,8 +97,9 @@ function LessonBody({ data }: { data: FullData }) {
         />
       )}
 
-      {/* Note — under the video, so the Student can write while they watch */}
-      {currentUserId && <LessonNote note={note} />}
+      {/* Note — under the video, so the Student can write while they watch.
+          Keyed by lesson so the pager does not carry one lesson's draft into the next. */}
+      {currentUserId && <LessonNote key={lesson.id} note={note} />}
 
       {contentHtml && (
         <div
