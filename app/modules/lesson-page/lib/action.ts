@@ -7,11 +7,11 @@ import {
 import { toggleBookmark } from "~/lib/bookmarks.server";
 import { saveNote } from "~/lib/notes.server";
 import { parseFormData } from "~/lib/validation";
-import { lessonRef } from "./load";
+import { lessonIdOf, lessonRef } from "./load";
 import { markLessonComplete } from "./progress";
 import { getQuizById } from "./quiz";
 import { computeResult } from "./quiz-scoring";
-import { saveNoteSchema } from "./schemas";
+import { quizAnswerSchema, saveNoteSchema, submitQuizSchema } from "./schemas";
 import {
   isCommentIntent,
   runCommentIntent,
@@ -48,15 +48,16 @@ function saveNoteIntent({
   return { ok: true };
 }
 
-// Answers arrive as form fields named "question-{questionId}" with value = optionId
 function selectedAnswersFrom(formData: FormData) {
   const selectedAnswers: Record<number, number> = {};
   for (const [key, value] of formData.entries()) {
     if (!key.startsWith("question-")) continue;
-    const questionId = Number(key.replace("question-", ""));
-    const optionId = Number(value);
-    if (!isNaN(questionId) && !isNaN(optionId)) {
-      selectedAnswers[questionId] = optionId;
+    const answer = quizAnswerSchema.safeParse({
+      questionId: key.slice("question-".length),
+      optionId: value,
+    });
+    if (answer.success) {
+      selectedAnswers[answer.data.questionId] = answer.data.optionId;
     }
   }
   return selectedAnswers;
@@ -67,10 +68,11 @@ function submitQuizIntent({
   currentUserId,
   lessonId,
 }: IntentContext) {
-  const quizId = Number(formData.get("quizId"));
-  if (isNaN(quizId)) {
+  const parsed = parseFormData(formData, submitQuizSchema);
+  if (!parsed.success) {
     throw data("Invalid quiz ID", { status: 400 });
   }
+  const { quizId } = parsed.data;
   // Scope the quiz to this lesson so a quiz elsewhere can't be reached by
   // posting its id to this route.
   const quiz = getQuizById(quizId);
@@ -134,7 +136,7 @@ export async function runLessonAction(
     person,
     ref,
     currentUserId: person.id,
-    lessonId: Number(params.lessonId),
+    lessonId: lessonIdOf(params),
     now,
   });
 }

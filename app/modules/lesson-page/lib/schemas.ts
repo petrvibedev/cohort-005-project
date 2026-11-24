@@ -24,6 +24,18 @@ export const saveNoteSchema = z.object({
     ),
 });
 
+const idSchema = z.coerce.number().int().positive();
+
+export const lessonIdSchema = idSchema;
+
+export const submitQuizSchema = z.object({ quizId: idSchema });
+
+/** A quiz answer: form field "question-{questionId}", value the optionId. */
+export const quizAnswerSchema = z.object({
+  questionId: idSchema,
+  optionId: idSchema,
+});
+
 export const deleteCommentSchema = z.object({
   intent: z.literal("delete-comment"),
   commentId: z.coerce.number().int(),

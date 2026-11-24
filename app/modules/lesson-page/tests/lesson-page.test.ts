@@ -173,6 +173,23 @@ describe("runLessonAction", () => {
     });
   });
 
+  it("throws 400 for a quiz post with no quiz id", async () => {
+    await expect(
+      act(student, seeded.lessons[0].id, { intent: "submit-quiz", quizId: "" })
+    ).rejects.toMatchObject({ init: { status: 400 } });
+  });
+
+  it("does not count an empty answer as an answer", async () => {
+    const lessonId = seeded.lessons[0].id;
+    const quiz = addQuiz(testDb, lessonId);
+    const result = await act(student, lessonId, {
+      intent: "submit-quiz",
+      quizId: String(quiz.quizId),
+      [`question-${quiz.questionId}`]: "",
+    });
+    expect(result).toMatchObject({ quizResult: { totalCorrect: 0 } });
+  });
+
   it("throws 404 for a quiz on another lesson", async () => {
     const quiz = addQuiz(testDb, seeded.lessons[1].id);
     await expect(

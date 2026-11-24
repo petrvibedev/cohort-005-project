@@ -26,6 +26,7 @@ import {
 } from "./progress";
 import { getRenderedThread } from "./thread";
 import { loadLessonQuiz } from "./quiz";
+import { lessonIdSchema } from "./schemas";
 
 type Lesson = NonNullable<ReturnType<typeof getLessonById>>;
 
@@ -38,6 +39,13 @@ export function lessonRef(params: {
   lessonId: string;
 }): CourseRef {
   return { slug: params.slug, lessonId: params.lessonId };
+}
+
+/** The lesson id from the route; a malformed one counts as not found. */
+export function lessonIdOf(params: { lessonId: string }): number {
+  const parsed = lessonIdSchema.safeParse(params.lessonId);
+  if (!parsed.success) throw data("Lesson not found", { status: 404 });
+  return parsed.data;
 }
 
 function courseSummary(course: CourseWithDetails) {
@@ -131,7 +139,7 @@ export async function loadLessonPage(
   const currentUserId = person?.id ?? null;
   const { courseWithDetails, lesson, mod } = findLesson(
     course.id,
-    Number(params.lessonId)
+    lessonIdOf(params)
   );
   const shared = {
     course: courseSummary(courseWithDetails),
