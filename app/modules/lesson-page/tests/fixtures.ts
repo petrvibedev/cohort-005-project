@@ -1,5 +1,6 @@
 import { createTestDb, seedBaseData, type TestDb } from "~/test/setup";
 import * as schema from "~/db/schema";
+import { enrollStudentInTransaction } from "~/lib/enrollments.server";
 import { setCurrentUserId } from "~/lib/session";
 import { markdown } from "~/lib/text";
 
@@ -29,7 +30,13 @@ export function seedCourse(db: TestDb) {
 }
 
 export function enroll(db: TestDb, userId: number, courseId: number) {
-  db.insert(schema.enrollments).values({ userId, courseId }).run();
+  const result = enrollStudentInTransaction(
+    db,
+    userId,
+    courseId,
+    new Date("2026-01-01T00:00:00Z")
+  );
+  if (!result.ok) throw new Error(result.error);
 }
 
 /** A true/false quiz on the lesson; returns the option ids. */
