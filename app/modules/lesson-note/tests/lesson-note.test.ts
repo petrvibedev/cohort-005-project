@@ -16,7 +16,7 @@ describe("noteDraftStatus", () => {
     });
     expect(noteDraftStatus("   \n", null)).toMatchObject({
       empty: true,
-      unsaved: true,
+      unsaved: false,
       canSave: false,
     });
   });
@@ -59,5 +59,18 @@ describe("noteDraftStatus", () => {
     expect(
       noteDraftStatus("a".repeat(MAX_NOTE_LENGTH + 1), null)
     ).toMatchObject({ tooLong: true, canSave: false });
+  });
+
+  it("has nothing to save when the draft differs from the saved Note only by surrounding whitespace", () => {
+    expect(noteDraftStatus("same  \n", "same")).toMatchObject({
+      unsaved: false,
+      canSave: false,
+    });
+  });
+
+  it("does not count surrounding whitespace against the limit", () => {
+    expect(
+      noteDraftStatus(` ${"a".repeat(MAX_NOTE_LENGTH)}\n`, null)
+    ).toMatchObject({ length: MAX_NOTE_LENGTH, tooLong: false, canSave: true });
   });
 });
