@@ -53,17 +53,14 @@ function courseSummary(course: CourseWithDetails) {
 }
 
 function loadProgress(userId: number, courseId: number, lesson: Lesson) {
-  // Mark lesson as in-progress when viewed
   markLessonInProgress(userId, lesson.id);
   const lessonStatus = getLessonProgress(userId, lesson.id)?.status ?? null;
 
-  // Get progress for all lessons in course (for curriculum sidebar)
   const lessonProgressMap: Record<number, string> = {};
   for (const record of getLessonProgressForCourse(userId, courseId)) {
     lessonProgressMap[record.lessonId] = record.status;
   }
 
-  // Get video watch state for resume and progress display
   let lastWatchPosition = 0;
   let watchProgress = 0;
   if (lesson.videoUrl) {
@@ -98,7 +95,6 @@ async function loadContent(lesson: Lesson, currentUserId: number | null) {
       ? isBookmarked(db, currentUserId, lesson.id)
       : false,
     note: note ? { body: note.body, updatedAt: note.updatedAt } : null,
-    // Render lesson content from Markdown to HTML server-side
     contentHtml: lesson.content ? await renderMarkdown(lesson.content) : null,
     ...loadLessonQuiz(lesson.id, currentUserId),
   };

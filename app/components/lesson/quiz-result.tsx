@@ -64,7 +64,6 @@ export function QuizResultCard({
         <QuizHeading title={quiz.title} />
         <QuizResultSummary quizResult={quizResult} />
 
-        {/* Per-question results */}
         <div className="space-y-4">
           {quiz.questions.map((question, qIndex) => (
             <QuestionResultRow
@@ -78,7 +77,6 @@ export function QuizResultCard({
           ))}
         </div>
 
-        {/* Retake button */}
         {!quizResult.passed && (
           <div className="mt-6">
             <Button variant="outline" onClick={onRetake}>
