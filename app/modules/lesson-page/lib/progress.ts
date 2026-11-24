@@ -6,7 +6,7 @@ import {
   videoWatchEvents,
   LessonProgressStatus,
 } from "~/db/schema";
-import { and, desc, eq, or, sql } from "drizzle-orm";
+import { and, desc, eq, getTableColumns, sql } from "drizzle-orm";
 
 export function getLessonProgress(userId: number, lessonId: number) {
   return db
@@ -22,30 +22,13 @@ export function getLessonProgress(userId: number, lessonId: number) {
 }
 
 export function getLessonProgressForCourse(userId: number, courseId: number) {
-  const courseModules = db
-    .select({ id: modules.id })
-    .from(modules)
-    .where(eq(modules.courseId, courseId))
-    .all();
-
-  if (courseModules.length === 0) return [];
-
-  const courseLessons = db
-    .select({ id: lessons.id })
-    .from(lessons)
-    .where(or(...courseModules.map((m) => eq(lessons.moduleId, m.id))))
-    .all();
-
-  if (courseLessons.length === 0) return [];
-
   return db
-    .select()
+    .select(getTableColumns(lessonProgress))
     .from(lessonProgress)
+    .innerJoin(lessons, eq(lessons.id, lessonProgress.lessonId))
+    .innerJoin(modules, eq(modules.id, lessons.moduleId))
     .where(
-      and(
-        eq(lessonProgress.userId, userId),
-        or(...courseLessons.map((l) => eq(lessonProgress.lessonId, l.id)))
-      )
+      and(eq(lessonProgress.userId, userId), eq(modules.courseId, courseId))
     )
     .all();
 }

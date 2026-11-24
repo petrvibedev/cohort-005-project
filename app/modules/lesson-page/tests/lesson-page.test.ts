@@ -135,6 +135,15 @@ describe("runLessonAction", () => {
     expect((await loadFull(student, lessonId)).lessonStatus).toBe("completed");
   });
 
+  it("shows progress across every module of the course", async () => {
+    const [one, , three] = seeded.lessons;
+    await act(student, three.id, { intent: "mark-complete" });
+    expect((await loadFull(student, one.id)).lessonProgressMap).toEqual({
+      [one.id]: "in_progress",
+      [three.id]: "completed",
+    });
+  });
+
   it("toggles the Bookmark", async () => {
     const lessonId = seeded.lessons[0].id;
     expect(await act(student, lessonId, { intent: "toggle-bookmark" })).toEqual(
