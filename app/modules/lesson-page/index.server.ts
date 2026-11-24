@@ -1,7 +1,5 @@
-import { loadLessonPage as load } from "./lib/load";
+import { loadLessonPage as load, type LessonParams } from "./lib/load";
 import { runLessonAction as run } from "./lib/action";
-
-type LessonParams = { slug: string; lessonId: string };
 
 /**
  * Everything the Lesson page shows: the locked view for someone who cannot

@@ -28,16 +28,16 @@ import { getRenderedThread } from "./thread";
 import { loadLessonQuiz } from "./quiz";
 import { lessonIdSchema } from "./schemas";
 
+/** The Lesson route's URL params, as they arrive. */
+export type LessonParams = { slug: string; lessonId: string };
+
 type Lesson = NonNullable<ReturnType<typeof getLessonById>>;
 
 /**
  * The course named by this route's slug, through this lesson. A lesson in
  * another course, or a malformed lesson id, counts as not found.
  */
-export function lessonRef(params: {
-  slug: string;
-  lessonId: string;
-}): CourseRef {
+export function lessonRef(params: LessonParams): CourseRef {
   return { slug: params.slug, lessonId: params.lessonId };
 }
 
@@ -110,10 +110,7 @@ function findLesson(courseId: number, lessonId: number) {
   return { courseWithDetails, lesson, mod };
 }
 
-async function requireLessonDecisions(
-  request: Request,
-  params: { slug: string; lessonId: string }
-) {
+async function requireLessonDecisions(request: Request, params: LessonParams) {
   // Not found covers an unknown course, a malformed lesson id, and a lesson
   // from another course.
   const decisions = await coursePermissions.getCourseDecisions(
@@ -126,10 +123,7 @@ async function requireLessonDecisions(
   return decisions;
 }
 
-export async function loadLessonPage(
-  request: Request,
-  params: { slug: string; lessonId: string }
-) {
+export async function loadLessonPage(request: Request, params: LessonParams) {
   const decisions = await requireLessonDecisions(request, params);
   const { course, person, enrolled, view, take, manage } = decisions;
   const currentUserId = person?.id ?? null;

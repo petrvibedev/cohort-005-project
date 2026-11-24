@@ -7,7 +7,7 @@ import {
 import { toggleBookmark } from "~/lib/bookmarks.server";
 import { saveNote } from "~/lib/notes.server";
 import { parseFormData } from "~/lib/validation";
-import { lessonIdOf, lessonRef } from "./load";
+import { lessonIdOf, lessonRef, type LessonParams } from "./load";
 import { markLessonComplete } from "./progress";
 import { getQuizById } from "./quiz";
 import { computeResult } from "./quiz-scoring";
@@ -109,7 +109,7 @@ function runIntent(intent: string, context: IntentContext) {
 
 export async function runLessonAction(
   request: Request,
-  params: { slug: string; lessonId: string },
+  params: LessonParams,
   now: Date
 ) {
   const formData = await request.formData();
