@@ -209,6 +209,21 @@ describe("runLessonAction", () => {
     ).rejects.toMatchObject({ init: { status: 404 } });
   });
 
+  it("throws 404 for a post to a lesson id that is not a number", async () => {
+    await expect(
+      runLessonAction(
+        await postAs(student, seeded.lessons[0].id, {
+          intent: "toggle-bookmark",
+        }),
+        { slug: "test-course", lessonId: "abc" },
+        NOW
+      )
+    ).rejects.toMatchObject({
+      data: "Lesson not found",
+      init: { status: 404 },
+    });
+  });
+
   it("throws 400 for an unknown intent", async () => {
     await expect(
       act(student, seeded.lessons[0].id, { intent: "toString" })

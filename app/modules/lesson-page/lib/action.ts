@@ -116,8 +116,8 @@ export async function runLessonAction(
   const intent = formData.get("intent");
 
   // Every intent checks its own capability here — loader guards don't protect
-  // actions. The ref includes the lesson, so a lesson from another course (or
-  // a malformed id) is a 404.
+  // actions. The ref includes the lesson, so a lesson from another course
+  // is a 404, as is a malformed id.
   const capability =
     typeof intent === "string" && Object.hasOwn(INTENT_CAPABILITY, intent)
       ? INTENT_CAPABILITY[intent]
@@ -125,7 +125,8 @@ export async function runLessonAction(
   if (typeof intent !== "string" || !capability) {
     throw data("Invalid action", { status: 400 });
   }
-  const ref = lessonRef(params);
+  const lessonId = lessonIdOf(params);
+  const ref = lessonRef(params.slug, lessonId);
   const { person } = await coursePermissions.requireCapability(
     request,
     capability,
@@ -136,7 +137,7 @@ export async function runLessonAction(
     person,
     ref,
     currentUserId: person.id,
-    lessonId: lessonIdOf(params),
+    lessonId,
     now,
   });
 }

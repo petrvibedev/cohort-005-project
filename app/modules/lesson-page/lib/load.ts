@@ -35,10 +35,10 @@ type Lesson = NonNullable<ReturnType<typeof getLessonById>>;
 
 /**
  * The course named by this route's slug, through this lesson. A lesson in
- * another course, or a malformed lesson id, counts as not found.
+ * another course counts as not found.
  */
-export function lessonRef(params: LessonParams): CourseRef {
-  return { slug: params.slug, lessonId: params.lessonId };
+export function lessonRef(slug: string, lessonId: number): CourseRef {
+  return { slug, lessonId };
 }
 
 /** The lesson id from the route; a malformed one counts as not found. */
@@ -110,12 +110,15 @@ function findLesson(courseId: number, lessonId: number) {
   return { courseWithDetails, lesson, mod };
 }
 
-async function requireLessonDecisions(request: Request, params: LessonParams) {
-  // Not found covers an unknown course, a malformed lesson id, and a lesson
-  // from another course.
+async function requireLessonDecisions(
+  request: Request,
+  slug: string,
+  lessonId: number
+) {
+  // Not found covers an unknown course and a lesson from another course.
   const decisions = await coursePermissions.getCourseDecisions(
     request,
-    lessonRef(params)
+    lessonRef(slug, lessonId)
   );
   if (!decisions.found) {
     throw data("Lesson not found", { status: 404 });
@@ -124,13 +127,15 @@ async function requireLessonDecisions(request: Request, params: LessonParams) {
 }
 
 export async function loadLessonPage(request: Request, params: LessonParams) {
-  const decisions = await requireLessonDecisions(request, params);
+  const lessonId = lessonIdOf(params);
+  const decisions = await requireLessonDecisions(
+    request,
+    params.slug,
+    lessonId
+  );
   const { course, person, enrolled, view, take, manage } = decisions;
   const currentUserId = person?.id ?? null;
-  const { courseWithDetails, lesson, mod } = findLesson(
-    course.id,
-    lessonIdOf(params)
-  );
+  const { courseWithDetails, lesson, mod } = findLesson(course.id, lessonId);
   const shared = {
     course: courseSummary(courseWithDetails),
     curriculum: curriculumOf(courseWithDetails),
