@@ -8,6 +8,7 @@ import {
   postAs,
   seedCourse,
   type TestDb,
+  NOW,
 } from "./fixtures";
 
 let testDb: TestDb;
@@ -49,7 +50,8 @@ async function act(
 ) {
   return runLessonAction(
     await postAs(userId, onLesson, fields),
-    params(onLesson)
+    params(onLesson),
+    NOW
   );
 }
 

@@ -33,18 +33,17 @@ const INTENT_CAPABILITY: Record<string, Capability | undefined> = {
   "submit-quiz": "take",
 };
 
-function saveNoteIntent({ formData, currentUserId, lessonId }: IntentContext) {
+function saveNoteIntent({
+  formData,
+  currentUserId,
+  lessonId,
+  now,
+}: IntentContext) {
   const parsed = parseFormData(formData, saveNoteSchema);
   if (!parsed.success) {
     return { ok: false, error: parsed.errors.body };
   }
-  const saved = saveNote(
-    db,
-    currentUserId,
-    lessonId,
-    parsed.data.body,
-    new Date()
-  );
+  const saved = saveNote(db, currentUserId, lessonId, parsed.data.body, now);
   if (!saved.ok) return saved;
   return { ok: true };
 }
@@ -93,13 +92,13 @@ function submitQuizIntent({
 function runIntent(intent: string, context: IntentContext) {
   if (isCommentIntent(intent)) return runCommentIntent(intent, context);
   if (intent === "toggle-bookmark") {
-    const { currentUserId, lessonId } = context;
-    const bookmarked = toggleBookmark(db, currentUserId, lessonId, new Date());
+    const { currentUserId, lessonId, now } = context;
+    const bookmarked = toggleBookmark(db, currentUserId, lessonId, now);
     return { ok: true, bookmarked };
   }
   if (intent === "save-note") return saveNoteIntent(context);
   if (intent === "mark-complete") {
-    markLessonComplete(context.currentUserId, context.lessonId);
+    markLessonComplete(context.currentUserId, context.lessonId, context.now);
     return { success: true };
   }
   if (intent === "submit-quiz") return submitQuizIntent(context);
@@ -108,7 +107,8 @@ function runIntent(intent: string, context: IntentContext) {
 
 export async function runLessonAction(
   request: Request,
-  params: { slug: string; lessonId: string }
+  params: { slug: string; lessonId: string },
+  now: Date
 ) {
   const formData = await request.formData();
   const intent = formData.get("intent");
@@ -135,5 +135,6 @@ export async function runLessonAction(
     ref,
     currentUserId: person.id,
     lessonId: Number(params.lessonId),
+    now,
   });
 }

@@ -4,6 +4,8 @@ import { enrollStudentInTransaction } from "~/lib/enrollments.server";
 import { setCurrentUserId } from "~/lib/session";
 import { markdown } from "~/lib/text";
 
+export const NOW = new Date("2026-01-01T00:00:00Z");
+
 /** A course with two modules: "Basics" (lessons 1, 2) and "Next" (lesson 3). */
 export function seedCourse(db: TestDb) {
   const base = seedBaseData(db);
@@ -30,12 +32,7 @@ export function seedCourse(db: TestDb) {
 }
 
 export function enroll(db: TestDb, userId: number, courseId: number) {
-  const result = enrollStudentInTransaction(
-    db,
-    userId,
-    courseId,
-    new Date("2026-01-01T00:00:00Z")
-  );
+  const result = enrollStudentInTransaction(db, userId, courseId, NOW);
   if (!result.ok) throw new Error(result.error);
 }
 

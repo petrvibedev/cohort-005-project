@@ -18,8 +18,12 @@ export function loadLessonPage(request: Request, params: LessonParams) {
  * Throws 400 for an unknown intent and 404 for a comment or quiz from another
  * lesson.
  */
-export function runLessonAction(request: Request, params: LessonParams) {
-  return run(request, params);
+export function runLessonAction(
+  request: Request,
+  params: LessonParams,
+  now: Date
+) {
+  return run(request, params, now);
 }
 
 export type LessonPageData = Awaited<ReturnType<typeof load>>;

@@ -24,6 +24,7 @@ export type IntentContext = {
   ref: CourseRef;
   currentUserId: number;
   lessonId: number;
+  now: Date;
 };
 
 // Scope the id to this lesson so a comment elsewhere can't be reached by
@@ -39,6 +40,7 @@ async function createIntent({
   formData,
   currentUserId,
   lessonId,
+  now,
 }: IntentContext) {
   const parsed = parseFormData(formData, createCommentSchema);
   if (!parsed.success) {
@@ -50,14 +52,14 @@ async function createIntent({
     lessonId,
     parsed.data.parentId ?? null,
     parsed.data.body,
-    new Date(),
+    now,
     await defaultNotifications()
   );
   if (!created.ok) return created;
   return { ok: true };
 }
 
-function editIntent({ formData, currentUserId, lessonId }: IntentContext) {
+function editIntent({ formData, currentUserId, lessonId, now }: IntentContext) {
   const parsed = parseFormData(formData, editCommentSchema);
   if (!parsed.success) {
     return { ok: false, error: "Enter a comment before saving." };
@@ -68,14 +70,14 @@ function editIntent({ formData, currentUserId, lessonId }: IntentContext) {
     parsed.data.commentId,
     currentUserId,
     parsed.data.body,
-    new Date()
+    now
   );
   if (!edited.ok) return edited;
   return { ok: true };
 }
 
 async function deleteIntent(context: IntentContext) {
-  const { formData, person, ref, currentUserId, lessonId } = context;
+  const { formData, person, ref, currentUserId, lessonId, now } = context;
   const parsed = parseFormData(formData, deleteCommentSchema);
   if (!parsed.success) {
     return { ok: false, error: "Could not delete that comment." };
@@ -90,7 +92,7 @@ async function deleteIntent(context: IntentContext) {
     parsed.data.commentId,
     currentUserId,
     canModerate,
-    new Date(),
+    now,
     await defaultNotifications()
   );
   if (!deleted.ok) return deleted;

@@ -8,6 +8,7 @@ import {
   postAs,
   seedCourse,
   type TestDb,
+  NOW,
 } from "./fixtures";
 
 let testDb: TestDb;
@@ -44,7 +45,8 @@ async function act(
 ) {
   return runLessonAction(
     await postAs(userId, lessonId, fields),
-    params(lessonId)
+    params(lessonId),
+    NOW
   );
 }
 
@@ -111,7 +113,7 @@ describe("runLessonAction", () => {
       await act(student, lessonId, { intent: "save-note", body: " Hi " })
     ).toEqual({ ok: true });
     const page = await loadFull(student, lessonId);
-    expect(page.note?.body).toBe("Hi");
+    expect(page.note).toEqual({ body: "Hi", updatedAt: NOW.toISOString() });
   });
 
   it("refuses an empty Note with a message", async () => {

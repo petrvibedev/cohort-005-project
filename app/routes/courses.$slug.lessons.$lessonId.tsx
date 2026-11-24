@@ -20,7 +20,7 @@ export function loader({ params, request }: Route.LoaderArgs) {
 }
 
 export function action({ params, request }: Route.ActionArgs) {
-  return runLessonAction(request, params);
+  return runLessonAction(request, params, new Date());
 }
 
 export default function LessonViewer({ loaderData }: Route.ComponentProps) {
